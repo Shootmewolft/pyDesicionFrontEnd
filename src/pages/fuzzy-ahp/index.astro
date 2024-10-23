@@ -1,0 +1,39 @@
+---
+import Layout from '@layouts/Layout.astro'
+---
+
+<Layout title="Fuzzy AHP">
+  <main class="flex flex-col gap-2 items-center justify-center min-h-dvh px-4">
+    <button id="clickButton" class="rounded-xl p-4 border border-white/10 hover:bg-[#1f1f1f] hover:border-white/30 transition-colors duration-150 text-center">Click me</button>
+    <section id="response-ppf-ahp"></section>
+
+    <script>
+    interface FuzzyAHPResponse {
+      consistency_message: string;
+      consistency_ratio: number;
+      crisp_weigths: number[];
+      normalized_weights: number[];
+      fuzzy_weights: number[][];
+    }
+    import fetchMethod from 'src/services/fetchMethod'
+    const button = document.getElementById('clickButton') as HTMLButtonElement;
+    button.addEventListener('click', handleClick);
+    async function handleClick(){
+    const response: FuzzyAHPResponse = await fetchMethod('http://127.0.0.1:8000/fuzzy-ahp', 'GET')
+    const section = document.getElementById('response-ppf-ahp') as HTMLElement;
+    section.innerHTML = `
+      <h2>Consistency: ${response.consistency_message}</h2>
+      <h2>Consistency ratio: ${response.consistency_ratio}</h2>
+      <h2>Crisp Weigths: ${response.crisp_weigths.toString().replaceAll(',', ' - ')}</h2>
+      <h2>Normalized Weights: ${response.normalized_weights.toString().replaceAll(',', ' - ')}</h2>
+      <div>
+        <h2>Fuzzy Weights:</h2>
+        <div>
+          ${response.fuzzy_weights.map((el) => `<span> [${el.toString().replaceAll(',', ' - ')}] </span>`)}
+        </div>
+      </div>
+    `;
+  }
+    </script>
+  </main>
+</Layout>

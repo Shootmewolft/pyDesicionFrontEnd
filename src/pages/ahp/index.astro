@@ -1,0 +1,58 @@
+---
+import Layout from "@layouts/Layout.astro";
+---
+
+<Layout title="AHP">
+  <main class="flex flex-col gap-2 items-center justify-center min-h-dvh px-4">
+    <h1 class="text-2xl font-bold py-4">Select a weight derivation</h1>
+    <form class="flex flex-col gap-4 items-center" method="post" >
+      <div class="flex flex-col gap-4 w-full">
+        <div class="flex gap-2">
+          <input type="radio" name="weight" id="mean" value="mean">
+          <label for="mean">Mean</label>
+        </div>
+        <div class="flex gap-2">
+          <input type="radio" name="weight" id="geometric" value="geometric">
+          <label for="geometric">Geometric</label>
+        </div>
+        <div class="flex gap-2">
+          <input type="radio" name="weight" id="maxEigen" value="max_eigen" required>
+          <label for="maxEigen">Max eigen</label>
+        </div>
+      </div>
+      <button class="px-4 py-2 border border-white/50 hover:border-white/100 transition duration-300 rounded-sm">Calculate</button>
+    </form>
+    <section id="response-ahp" class="flex flex-col gap-2 items-center">
+    </section>
+  </main>
+</Layout>
+
+<script>
+  import fetchMethod from '../../services/fetchMethod.ts';
+  const form = document.querySelector('form');
+  if (form){
+    form.addEventListener('submit', handleSubmit)
+  }
+
+  interface ResponseProps {
+    consistency_message: string;
+    consistency_ratio: number;
+    weights: number[];
+  }
+
+  async function handleSubmit(event: Event) {
+    const weight = document.querySelector('input[name="weight"]:checked') as HTMLInputElement;
+    event.preventDefault();
+    const response = await fetchMethod('http://127.0.0.1:8000/calculate-ahp/', "POST", { weight_derivation: weight.value })
+    addReponse(response)
+  }
+
+  function addReponse(response: ResponseProps) {
+    const section = document.getElementById('response-ahp') as HTMLElement;
+    section.innerHTML = `
+      <h2>Consistency ratio: ${response.consistency_ratio}</h2>
+      <h2>Weights: ${response.weights.toString().replaceAll(',', ' - ')}</h2>
+      <p>${response.consistency_message}</p>
+    `;
+  }
+</script>
